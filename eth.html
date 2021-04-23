@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<script src="js/jquery.js" type="text/javascript" charset="utf-8"></script>
+		<script src="./js/noty.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/store.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/bignumber.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/web3.js" type="text/javascript" charset="utf-8"></script>
+		<link rel="stylesheet" type="text/css" href="./css/noty.css"/>
+		<meta name="viewport" content="initial-scale=1" />
+		<title></title>
+		<style type="text/css">
+			button {
+				padding: 6px 15px;
+				background: #fff;
+				border: 1px solid #999;
+				border-radius: 4px;
+				outline: none;
+				box-shadow: 0;
+				cursor: pointer;
+			}
+			.address-wrapper, .balance-wrapper {
+				padding: 10px 0;
+			}
+		</style>
+		<style type="text/css">
+			body {
+				padding: 50px;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="address-wrapper">address: <span id="address"></span></div>
+		<div class="balance-wrapper">balance: <span id="balance"></span></div>
+		<button id="check">监测</button>
+		<button id="request">请求钱包</button>
+		<button id="getaddress">请求地址</button>
+		<button id="getbalance">获取余额</button>
+		<button id="sign">签名</button>
+		<button id="sendtx">发送交易</button>
+		<button id="contract">合约</button>
+	</body>
+	<script type="text/javascript">
+		let timeout = 3000
+		let walletInstalled
+		let precision = 8 // 精度
+		var ethereum
+		let note = new Noty({
+			progressBar: false,
+			timeout
+		})
+		// 是否安装了metamask
+		function init() {
+			let connected = store.get('connected')
+			let address = store.get('address')
+			window.connected = connected
+			window.address = address
+			if (address) {
+				$("#address").html(address)
+			}
+			// setTimeout(() => {
+			// 	request()
+			// }, 5000)
+		}
+		init()
+		function check () {
+			let { ethereum } = window
+			return ethereum && ethereum.isMetaMask
+		}
+		function request() {
+			if (!check()) {
+				note.setText('没有安装metamask', true).setType('error', true).show()
+			} else {
+				ethereum.request({
+					method: 'eth_requestAccounts'
+				}).then(accounts => {
+					if (accounts && accounts.length) {
+						$('#address').html(accounts[0])
+						store.set('connected', true)
+						store.set('address', accounts[0])
+					}
+				}).catch(err => {
+					if (err.message) {
+						note.setText(err.message, true).setType('error', true).show()
+					}
+				})
+			}
+		}
+		async function getAddress() {
+			return await ethereum.request({
+				method: 'eth_accounts'
+			})
+		}
+		function getbalance() {
+			console.log('eth_getbalance')
+			let params = [
+				address,
+				'latest'
+			]
+			ethereum.request({
+				method: 'eth_getBalance',
+				params
+			}).then(res => {
+				let n = Math.pow(10, 18)
+				var num = new BigNumber(parseFloat(res) / n).toFormat(8)
+				$('#balance').html(num)
+			}).catch(err => {
+				console.log('err', err)
+			})
+		}
+		function sendTx() {
+			if (!address) return
+			ethereum.request({
+				method: 'eth_sendTransaction',
+				params: [
+					{
+						from: address,
+						to: '0x2f318C334780961FB129D2a6c30D0763d9a5C970',
+						value: '0x0',
+						gasPrice: '0x09184e72a000',
+						gas: '0x2710',
+					},
+				],
+			})
+			.then((txHash) => console.log(txHash))
+			.catch(err => {
+				if (err.message) {
+					note.setText(err.message, true).setType('error', true).show()
+				}
+			})
+		}
+		function sign() {
+			if(!address) return
+			let message = '0x879a053d4800c6354e76c7985a865d2922c82fb5b3f4577b2fe08b998954f2e0'
+			ethereum.request({
+				method: 'eth_sign',
+				params:[address, message]
+			}).then(res => {
+				console.log(res)
+				// alert('result:' + JSON.stringify(res))
+			}).catch(err => {
+				console.warn(err)
+				if (err.message) {
+					note.setText(err.message, true).setType('error', true).show()
+				}
+			})
+		}
+		ethereum && ethereum.on('accountsChanged', function (accounts) {
+			if (accounts && accounts.length) {
+				$('#address').html(accounts[0])
+			} else {
+				$('#address').html('')
+				store.set('connected','')
+				store.set('address', '')
+			}
+		})
+		$(document).on('click','#check', function () {
+			let result = check()
+			walletInstalled = result
+			if (!result) {
+				note.setText('没有安装metamask', true).setType('error', true).show()
+			} else {
+				console.log('hi')
+				note.setText('安装了metamask', true).setType('success', true).show()
+			}
+		})
+		$('#request').on('click', function () {
+			request()
+		})
+		$('#getaddress').on('click', async function () {
+			let accounts = await getAddress()
+			if (accounts && accounts.length) {
+				$('#address').html(accounts[0])
+				store.set('connected', true)
+				store.set('address', accounts[0])
+			}
+		})
+		$('#getbalance').click(function () {
+			getbalance()
+		})
+		$('#sendtx').click(function () {
+			sendTx()
+		})
+		$('#sign').click(function () {
+			sign()
+		})
+		$('#contract').click(function () {
+			contract()
+		})
+	</script>
+	<script src="js/index.js" type="text/javascript" charset="utf-8"></script>
+	<script src="js/console.js" type="text/javascript" charset="utf-8"></script>
+	<script type="text/javascript">
+		var a = new VConsole()
+	</script>
+</html>

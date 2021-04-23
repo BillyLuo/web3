@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<script src="https://unpkg.com/@popperjs/core@2/dist/umd/popper.min.js"></script>
+		<script src="https://unpkg.com/tippy.js@6/dist/tippy-bundle.umd.js"></script>
+		<link rel="stylesheet" type="text/css" href="https://unpkg.com/tippy.js@6/themes/light.css" />
+		<link rel="stylesheet" type="text/css" href="https://unpkg.com/tippy.js@6/themes/material.css" />
+		<link
+		  rel="stylesheet"
+			type="text/css"
+		  href="https://unpkg.com/tippy.js@6/animations/scale.css"
+		/>
+		<link
+		  rel="stylesheet"
+			type="text/css"
+		  href="https://unpkg.com/tippy.js@6/animations/shift-away.css"
+		/>
+		<link
+		  rel="stylesheet"
+			type="text/css"
+		  href="https://unpkg.com/tippy.js@6/animations/shift-toward.css"
+		/>
+		<link
+		  rel="stylesheet"
+			type="text/css"
+		  href="https://unpkg.com/tippy.js@6/animations/perspective.css"
+		/>
+		<style type="text/css">
+			body {
+				padding: 100px;
+			}
+		</style>
+	</head>
+	<body>
+		<div>
+			<button id="bu" data-tippy-content="hello, world">text</button>
+		</div>
+		<video style="margin-top: 100px;" src="http://1305196882.vod2.myqcloud.com/077d310dvodcq1305196882/32fc59ae5285890816850853512/playlist.m3u8" autoplay controls></video>
+	</body>
+	<script type="text/javascript">
+		var ins1 = tippy(bu,{
+			placement: 'bottom',
+			arrow: true,
+			// animation: 'shift-toward',
+			duration: '20'
+		})
+		document.body.onclick = function () {
+			ins1.show()
+		}
+		function Person(){
+				this.name = 'Hello world';
+		}
+
+		Person.prototype.getName = function(){
+				console.log(this.name);
+		}
+
+		function Child(){
+			this.name = 'child'
+		}
+
+		Child.prototype = new Person();
+		var child1 = new Child();
+		var child2 = new Child();
+		child1.getName = function () {
+			console.log('new function',this.name)
+		}
+		child2.getName()
+	</script>
+</html>

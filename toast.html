@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<script src="./toast.js" type="text/javascript" charset="utf-8"></script>
+		<meta name="viewport" content="initial-scale=1,"/>
+		<title></title>
+	</head>
+	<body>
+	</body>
+	
+	<script type="text/javascript">
+		let alert = new AlertClass()
+		alert.show({
+		    title: '提示标题',
+		    content: '提示内容',
+		    onShow: function(){
+		        console.log('打开了alert')
+		    },
+				onHide: function () {
+					console.log('closed')
+				}
+		})
+	</script>
+</html>

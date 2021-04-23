@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<link href="https://unpkg.com/@primer/css@^16.0.0/dist/primer.css" rel="stylesheet" />
+		<script src="https://www.unpkg.com/vue@2.6.12/dist/vue.js"></script>
+		<meta name="viewport" content="initial-scale=1"/>
+		<style type="text/css">
+			.pagination a:focus {
+				border-color: transparent;
+			}
+		</style>
+	</head>
+	<body>
+		<a href="https://t.asczwa.com/taobao?backurl=http://m.tb.cn/h.vTXKNl" rel="external nofollow" >taobao test</a>
+		<div id="app">
+			<div>{{total}}</div>
+			<nav class="paginate-container" aria-label="Pagination">
+				<div class="pagination">
+					<span class="previous_page" @click="before" :aria-disabled="current <= 1">Previous</span>
+					<template v-for="item in total">
+						<em v-if="item == current" aria-current="page">{{item}}</em>
+						<a href="javascript:;" v-else-if="item<5 || item>16" :aria-label="'Page '+item" @click="page(item)">{{item}}</a>
+						<span class="gap" v-else-if="item==9">…</span>
+					</template>
+					<!-- <em aria-current="page">1</em>
+					<a href="#url" aria-label="Page 2">2</a>
+					<a href="#url" aria-label="Page 3">3</a> -->
+					<!-- <span class="gap">…</span> -->
+					<!-- <a href="#url" aria-label="Page 8">8</a>
+					<a href="#url" aria-label="Page 9">9</a>
+					<a href="#url" aria-label="Page 10">10</a> -->
+					<a class="next_page" @click="next" rel="next" href="#url" :aria-disabled="current >= total">Next</a>
+				</div>
+			</nav>
+		</div>
+	</body>
+	<script type="text/javascript">
+		var vm = new Vue({
+			el: '#app',
+			data() {
+				return {
+					total: 20,
+					pageSize: 10,
+					current: 1,
+				}
+			},
+			methods: {
+				next() {
+					if (this.current == this.total) return
+					this.current ++
+				},
+				before() {
+					if (this.current == 1) return 
+					this.current --
+				},
+				page(item) {
+					this.current = item
+				},
+			}
+		})
+	</script>
+</html>
