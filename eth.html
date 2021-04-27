@@ -84,23 +84,19 @@
 		}
 
 		function request() {
-			if (!check()) {
-				note.setText('没有安装metamask', true).setType('error', true).show()
-			} else {
-				web3.eth.requestAccounts().then(accounts => {
-					console.log(accounts)
-					if (accounts && accounts.length) {
-						$('#address').html(accounts[0])
-						address = accounts[0]
-						store.set('connected', true)
-						store.set('address', accounts[0])
-					}
-				}).catch(err => {
-					if (err.message) {
-						note.setText(err.message, true).setType('error', true).show()
-					}
-				})
-			}
+			web3.eth.requestAccounts().then(accounts => {
+				console.log(accounts)
+				if (accounts && accounts.length) {
+					$('#address').html(accounts[0])
+					address = accounts[0]
+					store.set('connected', true)
+					store.set('address', accounts[0])
+				}
+			}).catch(err => {
+				if (err.message) {
+					note.setText(err.message, true).setType('error', true).show()
+				}
+			})
 		}
 		async function getAddress() {
 			return await web3.eth.getAccounts()
