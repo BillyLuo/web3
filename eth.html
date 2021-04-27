@@ -7,7 +7,7 @@
 		<script src="js/store.js" type="text/javascript" charset="utf-8"></script>
 		<script src="js/bignumber.min.js" type="text/javascript" charset="utf-8"></script>
 		<script src="js/web3.js" type="text/javascript" charset="utf-8"></script>
-		<link rel="stylesheet" type="text/css" href="./css/noty.css"/>
+		<link rel="stylesheet" type="text/css" href="./css/noty.css" />
 		<meta name="viewport" content="initial-scale=1" />
 		<title></title>
 		<style type="text/css">
@@ -20,7 +20,9 @@
 				box-shadow: 0;
 				cursor: pointer;
 			}
-			.address-wrapper, .balance-wrapper {
+
+			.address-wrapper,
+			.balance-wrapper {
 				padding: 10px 0;
 			}
 		</style>
@@ -33,6 +35,7 @@
 	<body>
 		<div class="address-wrapper">address: <span id="address"></span></div>
 		<div class="balance-wrapper">balance: <span id="balance"></span></div>
+		<div class="balance-wrapper">transaction hash: <span id="tx"></span></div>
 		<button id="check">监测</button>
 		<button id="request">请求钱包</button>
 		<button id="getaddress">请求地址</button>
@@ -40,7 +43,15 @@
 		<button id="sign">签名</button>
 		<button id="sendtx">发送交易</button>
 		<button id="contract">合约</button>
+		<button id="add">add</button>
+		<a href="imtokenv2://wc?uri=wc%3A1df3f6be-a3e3-4441-9109-9a457032dc1f%401%3Fbridge%3Dhttps%253A%252F%252Fbridge.walletconnect.org%26key%3Dbb4aa6dd3a22b6061f8917d64542acbaef2b58fe9ca571ce908a5103bd3abfac">imtoken</a>
+		<a href="https://metamask.app.link/wc?uri=wc%3A1df3f6be-a3e3-4441-9109-9a457032dc1f%401%3Fbridge%3Dhttps%253A%252F%252Fbridge.walletconnect.org%26key%3Dbb4aa6dd3a22b6061f8917d64542acbaef2b58fe9ca571ce908a5103bd3abfac">metamask</a>
 	</body>
+	<script src="js/index.js" type="text/javascript" charset="utf-8"></script>
+	<script src="js/console.js" type="text/javascript" charset="utf-8"></script>
+	<script type="text/javascript">
+		var a = new VConsole() // 0x6955537CA046Fdb6836Fc6f111E02c542C4e0db0
+	</script>
 	<script type="text/javascript">
 		let timeout = 3000
 		let walletInstalled
@@ -63,20 +74,24 @@
 			// 	request()
 			// }, 5000)
 		}
-		init()
-		function check () {
-			let { ethereum } = window
+		// init()
+
+		function check() {
+			let {
+				ethereum
+			} = window
 			return ethereum && ethereum.isMetaMask
 		}
+
 		function request() {
 			if (!check()) {
 				note.setText('没有安装metamask', true).setType('error', true).show()
 			} else {
-				ethereum.request({
-					method: 'eth_requestAccounts'
-				}).then(accounts => {
+				web3.eth.requestAccounts().then(accounts => {
+					console.log(accounts)
 					if (accounts && accounts.length) {
 						$('#address').html(accounts[0])
+						address = accounts[0]
 						store.set('connected', true)
 						store.set('address', accounts[0])
 					}
@@ -88,20 +103,11 @@
 			}
 		}
 		async function getAddress() {
-			return await ethereum.request({
-				method: 'eth_accounts'
-			})
+			return await web3.eth.getAccounts()
 		}
+
 		function getbalance() {
-			console.log('eth_getbalance')
-			let params = [
-				address,
-				'latest'
-			]
-			ethereum.request({
-				method: 'eth_getBalance',
-				params
-			}).then(res => {
+			web3.eth.getBalance(address).then(res => {
 				let n = Math.pow(10, 18)
 				var num = new BigNumber(parseFloat(res) / n).toFormat(8)
 				$('#balance').html(num)
@@ -109,36 +115,37 @@
 				console.log('err', err)
 			})
 		}
+
 		function sendTx() {
 			if (!address) return
 			ethereum.request({
-				method: 'eth_sendTransaction',
-				params: [
-					{
+					method: 'eth_sendTransaction',
+					params: [{
 						from: address,
 						to: '0x2f318C334780961FB129D2a6c30D0763d9a5C970',
 						value: '0x0',
 						gasPrice: '0x09184e72a000',
 						gas: '0x2710',
-					},
-				],
-			})
-			.then((txHash) => console.log(txHash))
-			.catch(err => {
-				if (err.message) {
-					note.setText(err.message, true).setType('error', true).show()
-				}
-			})
+					}, ],
+				})
+				.then((txHash) => {
+
+				})
+				.catch(err => {
+					if (err.message) {
+						note.setText(err.message, true).setType('error', true).show()
+					}
+				})
 		}
+
 		function sign() {
-			if(!address) return
+			if (!address) return
 			let message = '0x879a053d4800c6354e76c7985a865d2922c82fb5b3f4577b2fe08b998954f2e0'
 			ethereum.request({
 				method: 'eth_sign',
-				params:[address, message]
-			}).then(res => {
-				console.log(res)
-				// alert('result:' + JSON.stringify(res))
+				params: [address, message]
+			}).then(txHash => {
+				$('#tx').html(txHash)
 			}).catch(err => {
 				console.warn(err)
 				if (err.message) {
@@ -146,16 +153,21 @@
 				}
 			})
 		}
-		ethereum && ethereum.on('accountsChanged', function (accounts) {
+		ethereum && ethereum.on('accountsChanged', function(accounts) {
 			if (accounts && accounts.length) {
 				$('#address').html(accounts[0])
+				address = accounts[0]
+				getbalance()
 			} else {
 				$('#address').html('')
-				store.set('connected','')
+				store.set('connected', '')
 				store.set('address', '')
 			}
 		})
-		$(document).on('click','#check', function () {
+		ethereum && ethereum.on('chainChanged', (chainId) => {
+		  console.log('changed>>>>>>>>>>>>>>>>>>', chainId)
+		});
+		$(document).on('click', '#check', function() {
 			let result = check()
 			walletInstalled = result
 			if (!result) {
@@ -165,33 +177,61 @@
 				note.setText('安装了metamask', true).setType('success', true).show()
 			}
 		})
-		$('#request').on('click', function () {
+		$('#request').on('click', function() {
 			request()
 		})
-		$('#getaddress').on('click', async function () {
+		$('#getaddress').on('click', async function() {
 			let accounts = await getAddress()
 			if (accounts && accounts.length) {
+				address = accounts[0]
 				$('#address').html(accounts[0])
 				store.set('connected', true)
 				store.set('address', accounts[0])
 			}
 		})
-		$('#getbalance').click(function () {
+		$('#getbalance').click(function() {
 			getbalance()
 		})
-		$('#sendtx').click(function () {
+		$('#sendtx').click(function() {
 			sendTx()
 		})
-		$('#sign').click(function () {
+		$('#sign').click(function() {
 			sign()
 		})
-		$('#contract').click(function () {
+		$('#contract').click(function() {
 			contract()
 		})
-	</script>
-	<script src="js/index.js" type="text/javascript" charset="utf-8"></script>
-	<script src="js/console.js" type="text/javascript" charset="utf-8"></script>
-	<script type="text/javascript">
-		var a = new VConsole()
+		$('#add').click(function () {
+			let ethereum = window.ethereum;
+			const data = [{
+				chainId: '0x38',
+				chainName: 'Binance Smart Chain Mainnet',
+				nativeCurrency:
+					{
+						name: 'BNB',
+						symbol: 'BNB',
+						decimals: 18
+					},
+				rpcUrls: ['https://bsc-dataseed.binance.org/'],
+				blockExplorerUrls: ['https://bscscan.com/'],
+			}]
+			const data1 = [{
+				chainId: '0x80',
+				chainName: 'Heco Mainnet',
+				nativeCurrency:
+					{
+						name: 'HT',
+						symbol: 'HT',
+						decimals: 18
+					},
+				rpcUrls: ['https://http-mainnet-node.huobichain.com'],
+				blockExplorerUrls: ['https://www.hecoinfo.com/'],
+			}]
+			const tx = ethereum.request({method: 'wallet_addEthereumChain', params:data1}).then(res => {
+				console.log(res)
+			}).catch(err => {
+				console.error(err)
+			})
+		})
 	</script>
 </html>
