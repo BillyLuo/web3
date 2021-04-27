@@ -6,6 +6,7 @@
 		<script src="./js/noty.js" type="text/javascript" charset="utf-8"></script>
 		<script src="js/store.js" type="text/javascript" charset="utf-8"></script>
 		<script src="js/bignumber.min.js" type="text/javascript" charset="utf-8"></script>
+		<!-- <script src="js/ether.js" type="text/javascript" charset="utf-8"></script> -->
 		<script src="js/web3.js" type="text/javascript" charset="utf-8"></script>
 		<link rel="stylesheet" type="text/css" href="./css/noty.css" />
 		<meta name="viewport" content="initial-scale=1" />
@@ -43,7 +44,8 @@
 		<button id="sign">签名</button>
 		<button id="sendtx">发送交易</button>
 		<button id="contract">合约</button>
-		<button id="add">add</button>
+		<button id="add">add bsc</button>
+		<button id="addHuobi">add heco</button>
 		<a href="imtokenv2://wc?uri=wc%3A1df3f6be-a3e3-4441-9109-9a457032dc1f%401%3Fbridge%3Dhttps%253A%252F%252Fbridge.walletconnect.org%26key%3Dbb4aa6dd3a22b6061f8917d64542acbaef2b58fe9ca571ce908a5103bd3abfac">imtoken</a>
 		<a href="https://metamask.app.link/wc?uri=wc%3A1df3f6be-a3e3-4441-9109-9a457032dc1f%401%3Fbridge%3Dhttps%253A%252F%252Fbridge.walletconnect.org%26key%3Dbb4aa6dd3a22b6061f8917d64542acbaef2b58fe9ca571ce908a5103bd3abfac">metamask</a>
 	</body>
@@ -89,6 +91,7 @@
 				if (accounts && accounts.length) {
 					$('#address').html(accounts[0])
 					address = accounts[0]
+					getbalance()
 					store.set('connected', true)
 					store.set('address', accounts[0])
 				}
@@ -180,6 +183,7 @@
 			let accounts = await getAddress()
 			if (accounts && accounts.length) {
 				address = accounts[0]
+				getbalance()
 				$('#address').html(accounts[0])
 				store.set('connected', true)
 				store.set('address', accounts[0])
@@ -197,9 +201,9 @@
 		$('#contract').click(function() {
 			contract()
 		})
-		$('#add').click(function () {
-			let ethereum = window.ethereum;
-			const data = [{
+		function addChain (type) {
+			let ethereum = window.ethereum || window.BinanceChain
+			let data = [{
 				chainId: '0x38',
 				chainName: 'Binance Smart Chain Mainnet',
 				nativeCurrency:
@@ -211,7 +215,7 @@
 				rpcUrls: ['https://bsc-dataseed.binance.org/'],
 				blockExplorerUrls: ['https://bscscan.com/'],
 			}]
-			const data1 = [{
+			let data1 = [{
 				chainId: '0x80',
 				chainName: 'Heco Mainnet',
 				nativeCurrency:
@@ -223,11 +227,19 @@
 				rpcUrls: ['https://http-mainnet-node.huobichain.com'],
 				blockExplorerUrls: ['https://www.hecoinfo.com/'],
 			}]
-			const tx = ethereum.request({method: 'wallet_addEthereumChain', params:data1}).then(res => {
+			data = (type == 'huobi') ? data1 : data
+			console.log(data)
+			const tx = ethereum.request({method: 'wallet_addEthereumChain', params:data}).then(res => {
 				console.log(res)
 			}).catch(err => {
 				console.error(err)
 			})
+		}
+		$('#add').click(function () {
+			addChain('binance')
+		})
+		$('#addHuobi').click(function () {
+			addChain('huobi')
 		})
 	</script>
 </html>
